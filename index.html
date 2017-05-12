@@ -985,6 +985,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                <form id="checkout-form" action="/transaction-endpoint" method="post">
+                                    <div id="error-message"></div>
+                                    <label for="card-number">Card Number</label>
+                                    <div class="hosted-field" id="card-number"></div>
+                                    <label for="cvv">CVV</label>
+                                    <div class="hosted-field" id="cvv"></div>
+                                    <label for="expiration-date">Expiration Date</label>
+                                    <div class="hosted-field" id="expiration-date"></div>
+                                    <input type="hidden" name="payment_method_nonce">
+                                    <input type="submit" value="Pay $10" disabled>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -1057,17 +1068,6 @@
             </div>
         </footer>
     </div>
-    <form id="checkout-form" action="/transaction-endpoint" method="post">
-        <div id="error-message"></div>
-        <label for="card-number">Card Number</label>
-        <div class="hosted-field" id="card-number"></div>
-        <label for="cvv">CVV</label>
-        <div class="hosted-field" id="cvv"></div>
-        <label for="expiration-date">Expiration Date</label>
-        <div class="hosted-field" id="expiration-date"></div>
-        <input type="hidden" name="payment_method_nonce">
-        <input type="submit" value="Pay $10" disabled>
-    </form>
     <!-- Load the Client component. -->
     <script src="https://js.braintreegateway.com/web/3.14.0/js/client.min.js"></script>
     <!-- Load the Hosted Fields component. -->
@@ -1121,6 +1121,22 @@
             }
 
             submit.removeAttribute('disabled');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                hostedFieldsInstance.tokenize(function(tokenizeErr, payload) {
+                    if (tokenizeErr) {
+                        // Handle error in Hosted Fields tokenization
+                        return;
+                    }
+
+                    // Put `payload.nonce` into the `payment_method_nonce` input, and then
+                    // submit the form. Alternatively, you could send the nonce to your server
+                    // with AJAX.
+                    document.querySelector('input[name="payment_method_nonce"]').value = payload.nonce;
+                    form.submit();
+                });
+            }, false);
         });
     });
     </script>
